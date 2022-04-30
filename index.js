@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -20,10 +20,18 @@ const itemCollection = client.db("techWorld").collection("items");
 async function run() {
   try {
     await client.connect();
+    // get all item
     app.get("/item", async (req, res) => {
       const cursor = itemCollection.find();
       const result = await cursor.toArray();
       res.send(result);
+    });
+    // get by id
+    app.get("/item/:id", async (req, res) => {
+      const id = req.params.id;
+      const item = await itemCollection.findOne({ _id: ObjectId(id) });
+
+      res.send(item);
     });
   } catch (error) {
     console.log(error);
