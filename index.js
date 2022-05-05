@@ -6,8 +6,8 @@ require("dotenv").config();
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.hvm8i.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
@@ -39,12 +39,21 @@ async function run() {
     // POST
     app.post("/item", async (req, res) => {
       const newItem = req.body;
-
       await itemCollection.insertOne(newItem);
       res.send({
         success: true,
         message: `${newItem.name} Successfully Added`,
       });
+    });
+
+    // DELETE
+    app.delete("/item/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await itemCollection.deleteOne({ _id: ObjectId(id) });
+      if (!result.deletedCount) {
+        return res.send({ success: false, error: "Something Was wrong" });
+      }
+      res.send({ success: true, message: "Successfully Delete the item" });
     });
   } catch (error) {
     console.log(error);
