@@ -46,6 +46,24 @@ async function run() {
       });
     });
 
+    // UPDATE Item Quantity
+    app.put("/item/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedQuantity = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          quantity: updatedQuantity.newQuantity,
+        },
+      };
+      const result = await itemCollection.updateOne(filter, updateDoc, options);
+      if (!result.modifiedCount) {
+        return res.send({ success: false, error: "Something Was wrong" });
+      }
+      res.send({ success: true, message: "Successfully Delivered the item" });
+    });
+
     // DELETE
     app.delete("/item/:id", async (req, res) => {
       const id = req.params.id;
