@@ -16,7 +16,6 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 const itemCollection = client.db("techWorld").collection("items");
-
 async function run() {
   try {
     await client.connect();
@@ -24,6 +23,14 @@ async function run() {
     // GET ALL ITEM
     app.get("/item", async (req, res) => {
       const cursor = itemCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // GET API for find by email
+    app.get("/myItem", async (req, res) => {
+      const email = req.query.email;
+      const cursor = itemCollection.find({ email });
       const result = await cursor.toArray();
       res.send(result);
     });
@@ -49,15 +56,18 @@ async function run() {
     // UPDATE Item Quantity
     app.put("/item/:id", async (req, res) => {
       const id = req.params.id;
-      const updatedQuantity = req.body;
-      const filter = { _id: ObjectId(id) };
+      const updatedQuantity = req.body?.newQuantity;
       const options = { upsert: true };
       const updateDoc = {
         $set: {
-          quantity: updatedQuantity.newQuantity,
+          quantity: updatedQuantity,
         },
       };
-      const result = await itemCollection.updateOne(filter, updateDoc, options);
+      const result = await itemCollection.updateOne(
+        { _id: ObjectId(id) },
+        updateDoc,
+        options
+      );
       if (!result.modifiedCount) {
         return res.send({ success: false, error: "Something Was wrong" });
       }
