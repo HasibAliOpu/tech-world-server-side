@@ -46,9 +46,19 @@ async function run() {
 
     // GET ALL ITEM
     app.get("/item", async (req, res) => {
+      const page = parseInt(req.query.page);
+      const count = parseInt(req.query.count);
       const cursor = itemCollection.find();
-      const result = await cursor.toArray();
-      res.send(result);
+      let items;
+      if (page || count) {
+        items = await cursor
+          .skip(page * count)
+          .limit(count)
+          .toArray();
+      } else {
+        items = await cursor.toArray();
+      }
+      res.send(items);
     });
 
     // GET API for find by email
@@ -111,6 +121,12 @@ async function run() {
         return res.send({ success: false, error: "Something Was wrong" });
       }
       res.send({ success: true, message: "Successfully Delete the item" });
+    });
+
+    // get api for count the item
+    app.get("/itemCount", async (req, res) => {
+      const itemCount = await itemCollection.estimatedDocumentCount();
+      res.send({ itemCount });
     });
   } catch (error) {
     console.log(error);
